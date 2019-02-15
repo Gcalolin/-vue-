@@ -62,6 +62,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      //compileToFunction 將vue模板編譯成函數
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -69,7 +70,8 @@ Vue.prototype.$mount = function (
         delimiters: options.delimiters,
         comments: options.comments
       }, this)
-      options.render = render
+
+      options.render = render  // <--important
       options.staticRenderFns = staticRenderFns
 
       /* istanbul ignore if */
@@ -79,6 +81,7 @@ Vue.prototype.$mount = function (
       }
     }
   }
+  //這裡是$mount的最外層的包裝
   return mount.call(this, el, hydrating)
 }
 

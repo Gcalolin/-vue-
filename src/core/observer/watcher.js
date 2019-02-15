@@ -98,9 +98,9 @@ export default class Watcher {
   /**
    * Evaluate the getter, and re-collect dependencies.
    */
-  //在evaluation期間，如果一個watcher想要得到另一個watcher的value，必須先把當前的target存起來，切到新的target，然後等它完成之後在返回
+  //在evaluation期間，如果一個watcher想要得到另一個watcher的value，必須先把當前的target存起來，切到新的target，然後等它完成之後在返回 ???
   get () {
-    pushTarget(this) //將當前target放到數組裡面去
+    pushTarget(this) //改變Dep.target為當前的watcher
     let value
     const vm = this.vm
     try {
@@ -118,13 +118,19 @@ export default class Watcher {
         traverse(value)
       }
       popTarget()
-      this.cleanupDeps()
+      this.cleanupDeps() //
     }
     return value
   }
 
 
+  //data會轉換被轉換成reactive property,它的值，即那個對象會被訂閱監聽 this.foo --> this.data['foo']
   /**
+   * <div id="app">
+   *      {{newName}}
+   * </div>
+   * 
+   * var app = new Vue({
    * {
    *    data: {
    *        name: 'foo',
@@ -135,17 +141,24 @@ export default class Watcher {
    *      }
    *    }
    * }
+   * })
+   * 在這個例子中，我們有一個屬性和一個計算屬性,並且我們展示計算屬性在視圖上，
+   * 初始化之後，我們有一個reactive property並且有兩個watcher訂閱它，需要注意的是，視圖並不訂閱計算屬性
+   * 因為計算屬性是一個watcher，不是reactive property
+   * 現在我們改變name的值，我們知道計算屬性和視圖都會更新，但是他們會以正確的順序更新嗎？
+   * 如果視圖先更新，他將會顯示老的計算屬性值
    * 
+   * name change -> dep.notify() -> update() -> 
+   * 
+   * 怎麼保持更新的順序??
    * 
    */
-
-
   /**
    * Add a dependency to this directive.
    */
   addDep (dep: Dep) {
     const id = dep.id
-    if (!this.newDepIds.has(id)) {
+    if (!this.newDepIds.has(id)) { //不存在這個dep就push
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
@@ -179,6 +192,7 @@ export default class Watcher {
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
+  //當你更新一個reactive property時，其property的setter會被調用，然後它將調用 dep.notify()方法，裡面會調用watcher的update()方法
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
@@ -194,6 +208,7 @@ export default class Watcher {
    * Scheduler job interface.
    * Will be called by the scheduler.
    */
+  //watcher.sync = true
   run () {
     if (this.active) {
       const value = this.get()
@@ -225,6 +240,7 @@ export default class Watcher {
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
    */
+  //當evalute()方法被調用時，它會調用this.get()方法，並且將dirty置為false  那麼，哪裡調用了evalate?
   evaluate () {
     this.value = this.get()
     this.dirty = false

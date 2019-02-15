@@ -42,11 +42,12 @@ function flushSchedulerQueue () {
   // Sort queue before flush.
   // This ensures that:
   // 1. Components are updated from parent to child. (because parent is always
-  //    created before the child)
+  //    created before the child)   //父組件總是要比子組件先更新
   // 2. A component's user watchers are run before its render watcher (because
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+  //根據他們的id排序 id越小執行越早
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
@@ -127,13 +128,16 @@ function callActivatedHooks (queue) {
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
+
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {
+      //flushing為false，該watcher放入任務隊列中
       queue.push(watcher)
     } else {
+      //flushing標記著該任務在隊列里是否執行
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
@@ -150,6 +154,9 @@ export function queueWatcher (watcher: Watcher) {
         flushSchedulerQueue()
         return
       }
+      //在nectTick里面調用flushSchedulerQueue，這樣它就不會立刻被執行，，如果queueWatcher被調用很多次的話，nextTick里會有很多重複的flushSchedulerQueue方法，
+      //所以waiting用來標記 操作 是否已經被放置在nextTick裡
+      //flushSchedulerQueue 將flushing 設為true
       nextTick(flushSchedulerQueue)
     }
   }

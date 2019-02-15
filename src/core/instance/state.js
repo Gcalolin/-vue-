@@ -247,10 +247,11 @@ function createComputedGetter (key) {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
       if (watcher.dirty) {
+        //當computed屬性的getter方法被調用，當watcher是dirty時，會執行evaluate()方法，使用lazy的模式可以推遲計算直到你真正需要這個值的時候(watcher default 為false)
         watcher.evaluate()
       }
       if (Dep.target) {
-        watcher.depend()
+        watcher.depend() //depend --> addDep --> addSub --> notify --> update
       }
       return watcher.value
     }

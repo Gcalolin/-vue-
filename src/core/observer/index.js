@@ -47,7 +47,7 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
-    //定義一個 __ob__ 屬性在你傳入的value值上
+    //定義一個 __ob__ 屬性 到你傳入的value值上
     def(value, '__ob__', this)
     //如果值為數組，會攔截數組方法（例如push，pop），Vue會檢測數組操作
     if (Array.isArray(value)) {

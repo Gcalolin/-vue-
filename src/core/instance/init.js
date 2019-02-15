@@ -44,6 +44,7 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      //options是當你調用new Vue({...})傳入的參數,所以傳給render.js的render()方法一定是來自vm.constructor,vm是vue的實例
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
